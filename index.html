@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="cyberpunk" data-glow="true">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>CYBER_CHESS // ULTRA 2026</title>
+  <style>
+	:root {
+	  --bg-color: #06080d;
+	  --card-bg: rgba(14, 18, 28, 0.92);
+	  --accent-1: #00f0ff;
+	  --accent-2: #ff6b00;
+	  --text-main: #f0f6fc;
+	  --text-muted: #8b949e;
+	  --border-color: rgba(0, 240, 255, 0.35);
+	  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+	  
+	  --glow-val: 0 0 12px rgba(0, 240, 255, 0.4);
+	  --text-glow-w: 0 0 8px rgba(0, 240, 255, 0.6);
+	  --text-glow-b: 0 0 8px rgba(255, 51, 102, 0.6);
+
+	  --board-light: #121927;
+	  --board-dark: #070a10;
+	  --square-select: rgba(0, 240, 255, 0.4);
+	  --square-move: rgba(255, 107, 0, 0.45);
+	  --square-check: rgba(255, 0, 60, 0.65);
+	  --piece-white: #00f0ff;
+	  --piece-black: #ff3366;
+	}
+
+	[data-theme="synthwave"] {
+	  --bg-color: #0f051d;
+	  --card-bg: rgba(28, 12, 48, 0.92);
+	  --accent-1: #ff007f;
+	  --accent-2: #00f0ff;
+	  --border-color: rgba(255, 0, 127, 0.35);
+	  --glow-val: 0 0 12px rgba(255, 0, 127, 0.4);
+	  --board-light: #26113b;
+	  --board-dark: #120521;
+	  --piece-white: #ff007f;
+	  --piece-black: #00f0ff;
+	  --text-glow-w: 0 0 8px rgba(255, 0, 127, 0.6);
+	  --text-glow-b: 0 0 8px rgba(0, 240, 255, 0.6);
+	}
+
+	[data-theme="matrix"] {
+	  --bg-color: #020a05;
+	  --card-bg: rgba(5, 25, 12, 0.92);
+	  --accent-1: #00ff66;
+	  --accent-2: #33ff00;
+	  --border-color: rgba(0, 255, 102, 0.35);
+	  --glow-val: 0 0 12px rgba(0, 255, 102, 0.4);
+	  --board-light: #0d2e18;
+	  --board-dark: #031409;
+	  --piece-white: #00ff66;
+	  --piece-black: #ccff00;
+	  --text-glow-w: 0 0 8px rgba(0, 255, 102, 0.6);
+	  --text-glow-b: 0 0 8px rgba(204, 255, 0, 0.6);
+	}
+
+	[data-theme="neonred"] {
+	  --bg-color: #0a0204;
+	  --card-bg: rgba(30, 8, 12, 0.92);
+	  --accent-1: #ff0055;
+	  --accent-2: #ffaa00;
+	  --border-color: rgba(255, 0, 85, 0.35);
+	  --glow-val: 0 0 12px rgba(255, 0, 85, 0.4);
+	  --board-light: #2b0d14;
+	  --board-dark: #120306;
+	  --piece-white: #ff0055;
+	  --piece-black: #ffaa00;
+	  --text-glow-w: 0 0 8px rgba(255, 0, 85, 0.6);
+	  --text-glow-b: 0 0 8px rgba(255, 170, 0, 0.6);
+	}
+
+	[data-theme="classic"] {
+	  --bg-color: #121212;
+	  --card-bg: rgba(30, 30, 30, 0.95);
+	  --accent-1: #d4af37;
+	  --accent-2: #ffffff;
+	  --text-main: #e0e0e0;
+	  --border-color: rgba(212, 175, 55, 0.35);
+	  --glow-val: none;
+	  --board-light: #e0d6b8;
+	  --board-dark: #8b5a2b;
+	  --piece-white: #ffffff;
+	  --piece-black: #111111;
+	  --square-select: rgba(212, 175, 55, 0.6);
+	  --square-move: rgba(255, 255, 255, 0.5);
+	  --square-check: rgba(255, 0, 0, 0.7);
+	  --text-glow-w: none;
+	  --text-glow-b: none;
+	}
+
+	[data-glow="false"] {
+	  --glow-val: none !important;
+	  --text-glow-w: none !important;
+	  --text-glow-b: none !important;
+	}
+
+	* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+
+	body {
+	  background-color: var(--bg-color);
+	  color: var(--text-main);
+	  font-family: var(--font-mono);
+	  min-height: 100vh;
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  padding: clamp(8px, 2vw, 20px);
+	  overflow-x: hidden;
+	  transition: background-color 0.3s ease;
+	}
+
+	#bg-canvas {
+	  position: fixed;
+	  top: 0; left: 0; width: 100vw; height: 100vh;
+	  z-index: -1; pointer-events: none;
+	}
+
+	.app-container {
+	  width: 100%;
+	  max-width: 1000px;
+	  background: var(--card-bg);
+	  border: 1px solid var(--border-color);
+	  border-radius: 12px;
+	  padding: clamp(12px, 2.5vw, 22px);
+	  backdrop-filter: blur(12px);
+	  box-shadow: var(--glow-val);
+	  display: flex;
+	  flex-direction: column;
+	  gap: 15px;
+	}
+
+	.app-container:fullscreen, .app-container:-webkit-full-screen {
+	  width: 100vw;
+	  height: 100vh;
+	  max-width: 100vw;
+	  border-radius: 0;
+	  border: none;
+	  padding: 10px;
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: space-between;
+	  background: var(--bg-color);
+	}
+
+	header {
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: center;
+	  flex-wrap: wrap;
+	  gap: 12px;
+	  padding-bottom: 12px;
+	  border-bottom: 1px solid var(--border-color);
+	}
+
+	.title-glitch {
+	  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+	  font-weight: 900;
+	  color: var(--accent-1);
+	  letter-spacing: 2px;
+	  text-shadow: var(--text-glow-w);
+	}
+
+	.status-badge {
+	  font-size: 0.78rem;
+	  color: var(--accent-1);
+	  background: rgba(255, 255, 255, 0.05);
+	  padding: 4px 8px;
+	  border-radius: 4px;
+	  border: 1px solid var(--border-color);
+	  display: inline-flex;
+	  align-items: center;
+	  gap: 6px;
+	}
+
+	.status-dot {
+	  width: 7px; height: 7px;
+	  background: var(--accent-1);
+	  border-radius: 50%;
+	  box-shadow: var(--glow-val);
+	  animation: pulse 1.5s infinite;
+	}
+
+	@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+	.controls-bar {
+	  display: flex;
+	  gap: 8px;
+	  flex-wrap: wrap;
+	  align-items: center;
+	  justify-content: flex-end;
+	}
+
+	@media (max-width: 600px) {
+	  .controls-bar {
+		width: 100%;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 6px;
+	  }
+	}
+
+	.btn-ctrl, select.btn-ctrl {
+	  background: rgba(255,255,255,0.05);
+	  border: 1px solid var(--border-color);
+	  color: var(--accent-1);
+	  font-family: var(--font-mono);
+	  font-size: clamp(0.72rem, 1.8vw, 0.8rem);
+	  padding: 6px 10px;
+	  border-radius: 6px;
+	  cursor: pointer;
+	  outline: none;
+	  transition: all 0.2s;
+	  text-align: center;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  gap: 4px;
+	  height: 34px;
+	  white-space: nowrap;
+	}
+
+	select.btn-ctrl option { background: #111; color: #fff; }
+
+	.btn-ctrl:hover, .btn-ctrl:active {
+	  background: var(--accent-1);
+	  color: #000;
+	  box-shadow: var(--glow-val);
+	}
+
+	.game-layout {
+	  display: grid;
+	  grid-template-columns: minmax(280px, 480px) 1fr;
+	  gap: 15px;
+	  align-items: start;
+	}
+
+	@media (max-width: 768px) {
+	  .game-layout { grid-template-columns: 1fr; }
+	}
+
+	.board-container-wrapper {
+	  width: 100%;
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  container-type: inline-size;
+	}
+
+	.board-wrapper {
+	  position: relative;
+	  width: 100%;
+	  max-width: 100cqw;
+	  aspect-ratio: 1 / 1;
+	  border: 2px solid var(--border-color);
+	  border-radius: 8px;
+	  overflow: hidden;
+	  box-shadow: var(--glow-val);
+	  background: #000;
+	  user-select: none;
+	}
+
+	.chess-board {
+	  display: grid;
+	  grid-template-columns: repeat(8, 1fr);
+	  grid-template-rows: repeat(8, 1fr);
+	  width: 100%;
+	  height: 100%;
+	}
+
+	.square {
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  font-size: clamp(1.6rem, 8cqw, 2.5rem);
+	  cursor: pointer;
+	  position: relative;
+	  transition: background-color 0.15s;
+	}
+
+	.square.light { background-color: var(--board-light); }
+	.square.dark { background-color: var(--board-dark); }
+
+	.square.selected {
+	  background-color: var(--square-select) !important;
+	  box-shadow: inset 0 0 12px var(--accent-1);
+	}
+
+	.square.check {
+	  background-color: var(--square-check) !important;
+	  box-shadow: inset 0 0 15px #ff003c;
+	  animation: checkPulse 1s infinite alternate;
+	}
+
+	@keyframes checkPulse {
+	  0% { box-shadow: inset 0 0 5px #ff003c; }
+	  100% { box-shadow: inset 0 0 20px #ff003c; }
+	}
+
+	.square.possible-move::after {
+	  content: '';
+	  width: 25%;
+	  height: 25%;
+	  background-color: var(--accent-2);
+	  border-radius: 50%;
+	  box-shadow: var(--glow-val);
+	}
+
+	.piece {
+	  line-height: 1;
+	  display: inline-block;
+	  transform: translateZ(0);
+	  transition: transform 0.1s ease;
+	}
+	
+	.piece.white { 
+	  color: var(--piece-white); 
+	  text-shadow: var(--text-glow-w); 
+	}
+	
+	.piece.black { 
+	  color: var(--piece-black); 
+	  text-shadow: var(--text-glow-b); 
+	}
+
+	.info-panel {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 12px;
+	}
+
+	.panel-card {
+	  background: rgba(0,0,0,0.35);
+	  border: 1px solid var(--border-color);
+	  border-radius: 8px;
+	  padding: 10px;
+	  display: flex;
+	  flex-direction: column;
+	}
+
+	.panel-title {
+	  font-size: 0.75rem;
+	  color: var(--text-muted);
+	  margin-bottom: 6px;
+	  text-transform: uppercase;
+	  letter-spacing: 1px;
+	}
+
+	.move-history {
+	  max-height: 180px;
+	  min-height: 100px;
+	  overflow-y: auto;
+	  font-size: 0.8rem;
+	  display: flex;
+	  flex-direction: column;
+	  gap: 3px;
+	}
+
+	.history-row {
+	  display: flex;
+	  justify-content: space-between;
+	  padding: 3px 6px;
+	  background: rgba(255,255,255,0.02);
+	  border-radius: 4px;
+	}
+	.history-row:nth-child(even) { background: rgba(255,255,255,0.05); }
+
+	.captured-pieces {
+	  display: flex;
+	  gap: 4px;
+	  font-size: 1.1rem;
+	  min-height: 26px;
+	  align-items: center;
+	  flex-wrap: wrap;
+	}
+
+	footer {
+	  border-top: 1px solid var(--border-color);
+	  padding-top: 10px;
+	  margin-top: 5px;
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: center;
+	  flex-wrap: wrap;
+	  gap: 8px;
+	  font-size: 0.72rem;
+	  color: var(--text-muted);
+	}
+
+	.brand-badge {
+	  display: inline-flex;
+	  align-items: center;
+	  gap: 6px;
+	  color: var(--accent-1);
+	  font-weight: bold;
+	  letter-spacing: 1.5px;
+	  text-transform: lowercase;
+	  background: rgba(0, 240, 255, 0.06);
+	  padding: 3px 8px;
+	  border-radius: 4px;
+	  border: 1px dashed var(--border-color);
+	  text-shadow: var(--text-glow-w);
+	}
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="app-container" id="app-root">
+	<header>
+	  <div>
+		<div class="title-glitch">CYBER_CHESS // 2026</div>
+		<div style="margin-top: 4px;">
+		  <span class="status-badge">
+			<span class="status-dot"></span> 
+			<span id="lbl-turn">ХІД</span>: <span id="current-turn" style="font-weight: bold; color: var(--accent-1);">БІЛІ</span>
+		  </span>
+		</div>
+	  </div>
+
+	  <div class="controls-bar">
+		<select class="btn-ctrl" id="lang-select" onchange="changeLanguage(this.value)">
+		  <option value="uk" selected>Українська 🇺🇦</option>
+		  <option value="en">English 🇬🇧</option>
+		  <option value="zh">中文 🇨🇳</option>
+		  <option value="hi">हिन्दी 🇮🇳</option>
+		  <option value="ja">日本語 🇯🇵</option>
+		</select>
+
+		<select class="btn-ctrl" id="mode-select" onchange="changeMode(this.value)">
+		  <option value="pvp">👥 PvP</option>
+		  <option value="easy">🤖 AI (EASY)</option>
+		  <option value="medium">🤖 AI (MID)</option>
+		  <option value="hard">🤖 AI (CYBER)</option>
+		</select>
+
+		<button class="btn-ctrl" onclick="toggleGlow()"><span id="glow-status">✨ GLOW: ON</span></button>
+		<button class="btn-ctrl" onclick="resetGame()" id="btn-reset">🔄 [ СКИД ]</button>
+		<button class="btn-ctrl" onclick="cycleTheme()">🎨 <span id="theme-name">CYBERPUNK</span></button>
+		<button class="btn-ctrl" onclick="toggleAudio()"><span id="audio-icon">🔇</span> SFX: <span id="audio-status">OFF</span></button>
+	  </div>
+	</header>
+
+	<div class="game-layout">
+	  <div class="board-container-wrapper">
+		<div class="board-wrapper" id="board-box">
+		  <div class="chess-board" id="board"></div>
+		</div>
+	  </div>
+
+	  <div class="info-panel">
+		<div class="panel-card">
+		  <div class="panel-title" id="lbl-captured">// ЗАХОПЛЕНІ ФІГУРИ</div>
+		  <div class="captured-pieces" id="captured-white"></div>
+		  <div class="captured-pieces" id="captured-black"></div>
+		</div>
+
+		<div class="panel-card">
+		  <div class="panel-title" id="lbl-history">// ІСТОРІЯ ХОДІВ</div>
+		  <div class="move-history" id="history"></div>
+		</div>
+	  </div>
+	</div>
+
+	<footer>
+	  <div>CORE PROTOCOL // v4.0</div>
+	</footer>
+  </div>
+
+  <script>
+	const i18n = {
+	  uk: { turn: "ХІД", white: "БІЛІ", black: "ЧОРНІ", reset: "🔄 [ СКИД ]", captured: "// ЗАХОПЛЕНІ ФІГУРИ", history: "// ІСТОРІЯ ХОДІВ", mate: "МАТ! Перемогли ", stalemate: "ПАТ! Нічия." },
+	  en: { turn: "TURN", white: "WHITE", black: "BLACK", reset: "🔄 [ RESET ]", captured: "// CAPTURED PIECES", history: "// MOVE HISTORY", mate: "CHECKMATE! Winner: ", stalemate: "STALEMATE! Draw." },
+	  zh: { turn: "回合", white: "白方", black: "黑方", reset: "🔄 [ 重置 ]", captured: "// 被吃棋子", history: "// 对局历史", mate: "将死！胜者：", stalemate: "逼和！平局。" },
+	  hi: { turn: "बारी", white: "सफ़ेद", black: "काला", reset: "🔄 [ रीसेट ]", captured: "// पकड़े गए मोहरे", history: "// चालों का इतिहास", mate: "शह और मात! विजेता: ", stalemate: "ड्रॉ (Stalemate)।" },
+	  ja: { turn: "手番", white: "白", black: "黒", reset: "🔄 [ リセット ]", captured: "// 取られたコマ", history: "// 棋谱", mate: "詰み！勝者：", stalemate: "ステイルメイト！引き分け。" }
+	};
+
+	let currentLang = 'uk';
+	let gameMode = 'pvp';
+	let isGlowOn = true;
+	let isGameOver = false;
+
+	function changeLanguage(lang) {
+	  currentLang = lang;
+	  const t = i18n[lang];
+	  document.getElementById('lbl-turn').innerText = t.turn;
+	  document.getElementById('btn-reset').innerText = t.reset;
+	  document.getElementById('lbl-captured').innerText = t.captured;
+	  document.getElementById('lbl-history').innerText = t.history;
+	  updateTurnText();
+	}
+
+	function changeMode(mode) {
+	  gameMode = mode;
+	  resetGame();
+	}
+
+	function toggleGlow() {
+	  isGlowOn = !isGlowOn;
+	  document.documentElement.setAttribute('data-glow', isGlowOn ? "true" : "false");
+	  document.getElementById('glow-status').innerText = isGlowOn ? "✨ GLOW: ON" : "🚫 GLOW: OFF";
+	  playCyberSFX('select');
+	}
+
+	function updateTurnText(customMsg) {
+	  const t = i18n[currentLang];
+	  const turnEl = document.getElementById('current-turn');
+	  if (customMsg) {
+		turnEl.innerText = customMsg;
+		turnEl.style.color = 'var(--accent-2)';
+	  } else {
+		turnEl.innerText = turn === 'white' ? t.white : t.black;
+		turnEl.style.color = turn === 'white' ? 'var(--accent-1)' : 'var(--piece-black)';
+	  }
+	}
+
+	const PIECES = {
+	  p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
+	  P: '♟', R: '♜', N: '♞', B: '♝', Q: '♛', K: '♚'
+	};
+
+	const initialBoard = [
+	  ['r','n','b','q','k','b','n','r'],
+	  ['p','p','p','p','p','p','p','p'],
+	  ['','','','','','','',''],
+	  ['','','','','','','',''],
+	  ['','','','','','','',''],
+	  ['','','','','','','',''],
+	  ['P','P','P','P','P','P','P','P'],
+	  ['R','N','B','Q','K','B','N','R']
+	];
+
+	let boardState = JSON.parse(JSON.stringify(initialBoard));
+	let turn = 'white';
+	let selectedSquare = null;
+	let possibleMoves = [];
+	let moveCount = 1;
+
+	let audioCtx = null;
+	let audioEnabled = false;
+
+	function playCyberSFX(type) {
+	  if (!audioEnabled) return;
+	  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+	  const now = audioCtx.currentTime;
+
+	  if (type === 'select') {
+		const osc = audioCtx.createOscillator();
+		const gain = audioCtx.createGain();
+		osc.type = 'sine';
+		osc.frequency.setValueAtTime(800, now);
+		osc.frequency.exponentialRampToValueAtTime(1200, now + 0.04);
+		gain.gain.setValueAtTime(0.04, now);
+		gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+		osc.connect(gain); gain.connect(audioCtx.destination);
+		osc.start(now); osc.stop(now + 0.04);
+
+	  } else if (type === 'move') {
+		const osc = audioCtx.createOscillator();
+		const gain = audioCtx.createGain();
+		osc.type = 'triangle';
+		osc.frequency.setValueAtTime(160, now);
+		osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+		gain.gain.setValueAtTime(0.07, now);
+		gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+		osc.connect(gain); gain.connect(audioCtx.destination);
+		osc.start(now); osc.stop(now + 0.05);
+
+	  } else if (type === 'capture') {
+		const osc = audioCtx.createOscillator();
+		const gain = audioCtx.createGain();
+		osc.type = 'sawtooth';
+		osc.frequency.setValueAtTime(320, now);
+		osc.frequency.linearRampToValueAtTime(50, now + 0.12);
+		gain.gain.setValueAtTime(0.08, now);
+		gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+		osc.connect(gain); gain.connect(audioCtx.destination);
+		osc.start(now); osc.stop(now + 0.12);
+
+	  } else if (type === 'reset') {
+		const osc = audioCtx.createOscillator();
+		const gain = audioCtx.createGain();
+		osc.type = 'square';
+		osc.frequency.setValueAtTime(400, now);
+		osc.frequency.linearRampToValueAtTime(800, now + 0.12);
+		gain.gain.setValueAtTime(0.03, now);
+		gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+		osc.connect(gain); gain.connect(audioCtx.destination);
+		osc.start(now); osc.stop(now + 0.12);
+	  }
+	}
+
+	function toggleAudio() {
+	  audioEnabled = !audioEnabled;
+	  document.getElementById('audio-status').innerText = audioEnabled ? 'ON' : 'OFF';
+	  document.getElementById('audio-icon').innerText = audioEnabled ? '🔊' : '🔇';
+	  if (audioEnabled) playCyberSFX('select');
+	}
+
+	const themes = ['cyberpunk', 'synthwave', 'matrix', 'neonred', 'classic'];
+	let themeIdx = 0;
+
+	function cycleTheme() {
+	  themeIdx = (themeIdx + 1) % themes.length;
+	  const theme = themes[themeIdx];
+	  document.documentElement.setAttribute('data-theme', theme);
+	  document.getElementById('theme-name').innerText = theme.toUpperCase();
+	  playCyberSFX('select');
+	  renderBoard();
+	}
+
+	function renderBoard() {
+	  const boardEl = document.getElementById('board');
+	  boardEl.innerHTML = '';
+
+	  const kingPos = findKing(turn, boardState);
+	  const inCheck = isSquareAttacked(kingPos.r, kingPos.c, turn === 'white' ? 'black' : 'white', boardState);
+
+	  for (let r = 0; r < 8; r++) {
+		for (let c = 0; c < 8; c++) {
+		  const square = document.createElement('div');
+		  const isDark = (r + c) % 2 === 1;
+		  square.className = `square ${isDark ? 'dark' : 'light'}`;
+
+		  if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+			square.classList.add('selected');
+		  }
+
+		  if (inCheck && kingPos.r === r && kingPos.c === c) {
+			square.classList.add('check');
+		  }
+
+		  if (possibleMoves.some(m => m.r === r && m.c === c)) {
+			square.classList.add('possible-move');
+		  }
+
+		  const val = boardState[r][c];
+		  if (val) {
+			const pieceEl = document.createElement('span');
+			const isWhite = val === val.toUpperCase();
+			pieceEl.className = `piece ${isWhite ? 'white' : 'black'}`;
+			pieceEl.innerText = PIECES[val];
+			square.appendChild(pieceEl);
+		  }
+
+		  square.addEventListener('click', () => handleSquareClick(r, c));
+		  boardEl.appendChild(square);
+		}
+	  }
+	}
+
+	function isWhitePiece(val) { return val && val === val.toUpperCase(); }
+	function isBlackPiece(val) { return val && val === val.toLowerCase(); }
+
+	function handleSquareClick(r, c) {
+	  if (isGameOver) return;
+	  if (gameMode !== 'pvp' && turn === 'black') return;
+
+	  const val = boardState[r][c];
+	  const isCurrentColorPiece = turn === 'white' ? isWhitePiece(val) : isBlackPiece(val);
+
+	  if (selectedSquare && possibleMoves.some(m => m.r === r && m.c === c)) {
+		makeMove(selectedSquare.r, selectedSquare.c, r, c);
+		selectedSquare = null;
+		possibleMoves = [];
+	  } else if (isCurrentColorPiece) {
+		selectedSquare = { r, c };
+		possibleMoves = getLegalMoves(r, c, boardState);
+		playCyberSFX('select');
+	  } else {
+		selectedSquare = null;
+		possibleMoves = [];
+	  }
+	  renderBoard();
+	}
+
+	function findKing(color, board) {
+	  const kingChar = color === 'white' ? 'K' : 'k';
+	  for (let r = 0; r < 8; r++) {
+		for (let c = 0; c < 8; c++) {
+		  if (board[r][c] === kingChar) return { r, c };
+		}
+	  }
+	  return { r: -1, c: -1 };
+	}
+
+	function isSquareAttacked(targetR, targetC, attackerColor, board) {
+	  for (let r = 0; r < 8; r++) {
+		for (let c = 0; c < 8; c++) {
+		  const piece = board[r][c];
+		  if (!piece) continue;
+		  const isAttacker = attackerColor === 'white' ? isWhitePiece(piece) : isBlackPiece(piece);
+		  if (isAttacker) {
+			const rawMoves = getRawMoves(r, c, board);
+			if (rawMoves.some(m => m.r === targetR && m.c === targetC)) {
+			  return true;
+			}
+		  }
+		}
+	  }
+	  return false;
+	}
+
+	function getRawMoves(r, c, board) {
+	  const moves = [];
+	  const piece = board[r][c];
+	  if (!piece) return moves;
+
+	  const isWhite = isWhitePiece(piece);
+	  const type = piece.toLowerCase();
+
+	  const inBounds = (nr, nc) => nr >= 0 && nr < 8 && nc >= 0 && nc < 8;
+	  const isEnemy = (target) => target && (isWhite ? isBlackPiece(target) : isWhitePiece(target));
+	  const isEmpty = (target) => target === '';
+
+	  if (type === 'p') {
+		const dir = isWhite ? -1 : 1;
+		const startRow = isWhite ? 6 : 1;
+
+		if (inBounds(r + dir, c) && isEmpty(board[r + dir][c])) {
+		  moves.push({ r: r + dir, c });
+		  if (r === startRow && isEmpty(board[r + 2 * dir][c])) {
+			moves.push({ r: r + 2 * dir, c });
+		  }
+		}
+		[-1, 1].forEach(dc => {
+		  const nr = r + dir, nc = c + dc;
+		  if (inBounds(nr, nc) && isEnemy(board[nr][nc])) {
+			moves.push({ r: nr, c: nc });
+		  }
+		});
+	  }
+
+	  if (type === 'n') {
+		const offsets = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+		offsets.forEach(([dr, dc]) => {
+		  const nr = r + dr, nc = c + dc;
+		  if (inBounds(nr, nc)) {
+			const target = board[nr][nc];
+			if (isEmpty(target) || isEnemy(target)) moves.push({ r: nr, c: nc });
+		  }
+		});
+	  }
+
+	  const addRayMoves = (directions) => {
+		directions.forEach(([dr, dc]) => {
+		  let nr = r + dr, nc = c + dc;
+		  while (inBounds(nr, nc)) {
+			const target = board[nr][nc];
+			if (isEmpty(target)) {
+			  moves.push({ r: nr, c: nc });
+			} else {
+			  if (isEnemy(target)) moves.push({ r: nr, c: nc });
+			  break;
+			}
+			nr += dr; nc += dc;
+		  }
+		});
+	  };
+
+	  if (type === 'b') addRayMoves([[-1,-1],[-1,1],[1,-1],[1,1]]);
+	  if (type === 'r') addRayMoves([[-1,0],[1,0],[0,-1],[0,1]]);
+	  if (type === 'q') addRayMoves([[-1,-1],[-1,1],[1,-1],[1,1],[-1,0],[1,0],[0,-1],[0,1]]);
+
+	  if (type === 'k') {
+		const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+		dirs.forEach(([dr, dc]) => {
+		  const nr = r + dr, nc = c + dc;
+		  if (inBounds(nr, nc)) {
+			const target = board[nr][nc];
+			if (isEmpty(target) || isEnemy(target)) moves.push({ r: nr, c: nc });
+		  }
+		});
+	  }
+
+	  return moves;
+	}
+
+	// ПОЛНАЯ ЛОГИКА С ПРОВЕРКОЙ НА ШАХ И МАТ
+	function getLegalMoves(r, c, board) {
+	  const raw = getRawMoves(r, c, board);
+	  const piece = board[r][c];
+	  const isWhite = isWhitePiece(piece);
+	  const color = isWhite ? 'white' : 'black';
+	  const enemyColor = isWhite ? 'black' : 'white';
+
+	  return raw.filter(m => {
+		const boardCopy = JSON.parse(JSON.stringify(board));
+		boardCopy[m.r][m.c] = piece;
+		boardCopy[r][c] = '';
+		const kingPos = findKing(color, boardCopy);
+		return !isSquareAttacked(kingPos.r, kingPos.c, enemyColor, boardCopy);
+	  });
+	}
+
+	function hasAnyLegalMoves(color, board) {
+	  for (let r = 0; r < 8; r++) {
+		for (let c = 0; c < 8; c++) {
+		  const piece = board[r][c];
+		  if (!piece) continue;
+		  const isColor = color === 'white' ? isWhitePiece(piece) : isBlackPiece(piece);
+		  if (isColor) {
+			const moves = getLegalMoves(r, c, board);
+			if (moves.length > 0) return true;
+		  }
+		}
+	  }
+	  return false;
+	}
+
+	function makeMove(fromR, fromC, toR, toC) {
+	  const piece = boardState[fromR][fromC];
+	  const target = boardState[toR][toC];
+
+	  boardState[toR][toC] = piece;
+	  boardState[fromR][fromC] = '';
+
+	  if (target) {
+		const isWhiteTarget = isWhitePiece(target);
+		const container = document.getElementById(isWhiteTarget ? 'captured-white' : 'captured-black');
+		container.innerText += PIECES[target];
+		playCyberSFX('capture');
+	  } else {
+		playCyberSFX('move');
+	  }
+
+	  const cols = ['a','b','c','d','e','f','g','h'];
+	  const moveText = `${PIECES[piece]} ${cols[fromC]}${8 - fromR}➔${cols[toC]}${8 - toC}`;
+	  
+	  const historyEl = document.getElementById('history');
+	  if (turn === 'white') {
+		const row = document.createElement('div');
+		row.className = 'history-row';
+		row.innerHTML = `<span>${moveCount}. ${moveText}</span><span id="move-${moveCount}-b"></span>`;
+		historyEl.appendChild(row);
+	  } else {
+		const bCell = document.getElementById(`move-${moveCount}-b`);
+		if (bCell) bCell.innerText = moveText;
+		moveCount++;
+	  }
+	  historyEl.scrollTop = historyEl.scrollHeight;
+
+	  const nextTurn = turn === 'white' ? 'black' : 'white';
+	  turn = nextTurn;
+
+	  const kingPos = findKing(nextTurn, boardState);
+	  const inCheck = isSquareAttacked(kingPos.r, kingPos.c, nextTurn === 'white' ? 'black' : 'white', boardState);
+	  const canMove = hasAnyLegalMoves(nextTurn, boardState);
+
+	  const t = i18n[currentLang];
+
+	  if (!canMove) {
+		isGameOver = true;
+		if (inCheck) {
+		  const winner = nextTurn === 'white' ? t.black : t.white;
+		  updateTurnText(t.mate + winner);
+		} else {
+		  updateTurnText(t.stalemate);
+		}
+	  } else {
+		updateTurnText();
+		if (gameMode !== 'pvp' && turn === 'black') {
+		  setTimeout(makeAIMove, 300);
+		}
+	  }
+	}
+
+	function makeAIMove() {
+	  if (isGameOver) return;
+
+	  const allMoves = [];
+	  for (let r = 0; r < 8; r++) {
+		for (let c = 0; c < 8; c++) {
+		  if (isBlackPiece(boardState[r][c])) {
+			const moves = getLegalMoves(r, c, boardState);
+			moves.forEach(m => allMoves.push({ from: { r, c }, to: m }));
+		  }
+		}
+	  }
+
+	  if (allMoves.length === 0) return;
+
+	  let chosenMove = null;
+
+	  if (gameMode === 'easy') {
+		chosenMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+	  } else if (gameMode === 'medium') {
+		const captureMoves = allMoves.filter(m => boardState[m.to.r][m.to.c] !== '');
+		chosenMove = captureMoves.length > 0 ? captureMoves[Math.floor(Math.random() * captureMoves.length)] : allMoves[Math.floor(Math.random() * allMoves.length)];
+	  } else if (gameMode === 'hard') {
+		const values = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
+		let bestScore = -9999;
+		allMoves.forEach(m => {
+		  let score = 0;
+		  const target = boardState[m.to.r][m.to.c];
+		  if (target) score += (values[target.toLowerCase()] || 0) * 10;
+		  score += (m.to.r - m.from.r);
+		  if (score > bestScore) {
+			bestScore = score;
+			chosenMove = m;
+		  }
+		});
+		if (!chosenMove) chosenMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+	  }
+
+	  if (chosenMove) {
+		makeMove(chosenMove.from.r, chosenMove.from.c, chosenMove.to.r, chosenMove.to.c);
+		renderBoard();
+	  }
+	}
+
+	function resetGame() {
+	  boardState = JSON.parse(JSON.stringify(initialBoard));
+	  turn = 'white';
+	  selectedSquare = null;
+	  possibleMoves = [];
+	  moveCount = 1;
+	  isGameOver = false;
+	  document.getElementById('history').innerHTML = '';
+	  document.getElementById('captured-white').innerText = '';
+	  document.getElementById('captured-black').innerText = '';
+	  updateTurnText();
+	  playCyberSFX('reset');
+	  renderBoard();
+	}
+
+	function toggleFullscreen() {
+	  const root = document.getElementById('app-root');
+	  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+		if (root.requestFullscreen) {
+		  root.requestFullscreen();
+		} else if (root.webkitRequestFullscreen) {
+		  root.webkitRequestFullscreen();
+		}
+	  } else {
+		if (document.exitFullscreen) {
+		  document.exitFullscreen();
+		} else if (document.webkitExitFullscreen) {
+		  document.webkitExitFullscreen();
+		}
+	  }
+	}
+
+	let lastTap = 0;
+	const boardBox = document.getElementById('board-box');
+	boardBox.addEventListener('touchend', (e) => {
+	  const currentTime = new Date().getTime();
+	  const tapLength = currentTime - lastTap;
+	  if (tapLength < 300 && tapLength > 0) {
+		toggleFullscreen();
+		e.preventDefault();
+	  }
+	  lastTap = currentTime;
+	});
+
+	boardBox.addEventListener('dblclick', () => {
+	  toggleFullscreen();
+	});
+
+	const canvas = document.getElementById('bg-canvas');
+	const ctx = canvas.getContext('2d');
+	let pts = [];
+
+	function resize() {
+	  canvas.width = window.innerWidth;
+	  canvas.height = window.innerHeight;
+	}
+	window.addEventListener('resize', resize);
+	resize();
+
+	for (let i = 0; i < 30; i++) {
+	  pts.push({
+		x: Math.random() * canvas.width,
+		y: Math.random() * canvas.height,
+		vx: (Math.random() - 0.5) * 0.4,
+		vy: (Math.random() - 0.5) * 0.4
+	  });
+	}
+
+	function anim() {
+	  ctx.clearRect(0, 0, canvas.width, canvas.height);
+	  const color = getComputedStyle(document.body).getPropertyValue('--accent-1').trim();
+	  ctx.fillStyle = color;
+	  ctx.strokeStyle = color;
+
+	  pts.forEach((p, i) => {
+		p.x += p.vx; p.y += p.vy;
+		if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+		if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+		ctx.beginPath();
+		ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
+		ctx.fill();
+
+		for (let j = i + 1; j < pts.length; j++) {
+		  const p2 = pts[j];
+		  const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+		  if (dist < 110) {
+			ctx.globalAlpha = 0.05;
+			ctx.beginPath();
+			ctx.moveTo(p.x, p.y);
+			ctx.lineTo(p2.x, p2.y);
+			ctx.stroke();
+			ctx.globalAlpha = 1.0;
+		  }
+		}
+	  });
+	  requestAnimationFrame(anim);
+	}
+	
+	anim();
+	renderBoard();
+  </script>
+</body>
+</html>
